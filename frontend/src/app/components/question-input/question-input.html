@@ -1,0 +1,39 @@
+<div class="px-3 py-2 border-top">
+  <label for="question" class="form-label fw-semibold mb-1">Question</label>
+  <textarea
+    id="question"
+    #questionInput
+    class="form-control"
+    rows="2"
+    placeholder="Ask a question about your story... (Cmd+Enter to send)"
+    [value]="conversation.question()"
+    (input)="onInput(questionInput.value)"
+    (keydown)="onKeydown($event)"
+  ></textarea>
+  <div class="d-flex justify-content-end gap-2 mt-2">
+    <button
+      type="button"
+      class="btn btn-outline-secondary btn-sm"
+      [disabled]="!conversation.question().trim() || conversation.savingSource()"
+      (click)="conversation.saveSource(conversation.question())"
+    >
+      @if (conversation.savingSource()) {
+        Saving...
+      } @else {
+        Save
+      }
+    </button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      [disabled]="conversation.loading() || !conversation.question().trim()"
+      (click)="conversation.submit()"
+    >
+      @if (conversation.loading()) {
+        Sending...
+      } @else {
+        Send
+      }
+    </button>
+  </div>
+</div>

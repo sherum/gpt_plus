@@ -1,0 +1,25 @@
+<div class="px-3 py-2 h-100 d-flex flex-column">
+  <label for="narrative" class="form-label fw-semibold mb-1">Narrative</label>
+  <textarea
+    id="narrative"
+    #narrativeInput
+    class="form-control flex-grow-1"
+    placeholder="Paste or enter the current narrative text..."
+    [value]="conversation.narrative()"
+    (input)="onInput(narrativeInput.value)"
+  ></textarea>
+  <div class="d-flex justify-content-end mt-2">
+    <button
+      type="button"
+      class="btn btn-outline-secondary btn-sm"
+      [disabled]="!conversation.narrative().trim() || conversation.savingSource()"
+      (click)="conversation.saveSource(conversation.narrative())"
+    >
+      @if (conversation.savingSource()) {
+        Saving...
+      } @else {
+        Save
+      }
+    </button>
+  </div>
+</div>

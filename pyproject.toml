@@ -1,0 +1,11 @@
+[project]
+name = "gpt-plus"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.141.1",
+    "litellm>=1.100.0",
+    "pypdf>=6.17.0",
+    "python-dotenv>=1.2.3",
+    "uvicorn>=0.52.4",
+]

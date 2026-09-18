@@ -1,0 +1,44 @@
+<header class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom flex-wrap gap-2">
+  <h1 class="h5 mb-0">Science Fiction Writing Assistant</h1>
+  <div class="d-flex flex-wrap align-items-center gap-2">
+    <select
+      #toolSelect
+      class="form-select form-select-sm w-auto"
+      aria-label="Tool agent model"
+      title="Tool agent model"
+      (change)="conversation.toolAgentModel.set(toolSelect.value)"
+    >
+      @for (option of modelOptions; track option) {
+        <option [value]="option" [selected]="option === conversation.toolAgentModel()">{{ option }}</option>
+      }
+    </select>
+    <select
+      #primarySelect
+      class="form-select form-select-sm w-auto"
+      aria-label="Primary agent model"
+      title="Primary agent model"
+      (change)="conversation.primaryAgentModel.set(primarySelect.value)"
+    >
+      @for (option of modelOptions; track option) {
+        <option [value]="option" [selected]="option === conversation.primaryAgentModel()">{{ option }}</option>
+      }
+    </select>
+    <select
+      #finalSelect
+      class="form-select form-select-sm w-auto"
+      aria-label="Final agent model"
+      title="Final agent model"
+      (change)="conversation.finalAgentModel.set(finalSelect.value)"
+    >
+      @for (option of modelOptions; track option) {
+        <option [value]="option" [selected]="option === conversation.finalAgentModel()">{{ option }}</option>
+      }
+    </select>
+    <button type="button" class="btn btn-outline-secondary btn-sm" (click)="theme.toggle()">
+      {{ theme.dark() ? 'Light Mode' : 'Dark Mode' }}
+    </button>
+    <button type="button" class="btn btn-outline-secondary btn-sm" (click)="conversation.newConversation()">
+      New Conversation
+    </button>
+  </div>
+</header>

@@ -1,0 +1,24 @@
+<div class="px-3 py-2 h-100 d-flex flex-column">
+  <div class="fw-semibold mb-2">World-Building Context</div>
+  @for (source of conversation.sources(); track source.filename) {
+    <div class="form-check">
+      <input
+        class="form-check-input"
+        type="checkbox"
+        [id]="'source-' + source.filename"
+        [checked]="isSelected(source.filename)"
+        (change)="conversation.toggleSource(source.filename)"
+      />
+      <label class="form-check-label" [for]="'source-' + source.filename">{{ source.filename }}</label>
+    </div>
+  }
+
+  <label for="preview" class="form-label fw-semibold mb-1 mt-3">Preview</label>
+  <textarea
+    id="preview"
+    class="form-control flex-grow-1"
+    readonly
+    placeholder="Select a document to preview its contents..."
+    [value]="conversation.previewContent()"
+  ></textarea>
+</div>

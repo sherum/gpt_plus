@@ -1,0 +1,10 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+}
+
+.body-row {
+  flex: 1 1 auto;
+  min-height: 0;
+}

@@ -1,0 +1,20 @@
+services:
+  backend:
+    build: .
+    ports:
+      - "8123:8123"
+    env_file:
+      - .env
+    volumes:
+      - ./app:/app/app
+      - ./sources:/app/sources
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./frontend/src:/app/src
+      - /app/node_modules
+    depends_on:
+      - backend
