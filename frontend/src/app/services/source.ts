@@ -9,15 +9,19 @@ import { SourceDocument } from '../models/source-document';
 export class Source {
   private readonly http = inject(HttpClient);
 
-  list() {
-    return this.http.get<SourceDocument[]>(`${API_BASE_URL}/sources`);
+  folders() {
+    return this.http.get<string[]>(`${API_BASE_URL}/folders`);
   }
 
-  get(filename: string) {
-    return this.http.get<SourceContent>(`${API_BASE_URL}/sources/${encodeURIComponent(filename)}`);
+  list(folder: string) {
+    return this.http.get<SourceDocument[]>(`${API_BASE_URL}/sources`, { params: { folder } });
   }
 
-  create(content: string) {
-    return this.http.post<SourceDocument>(`${API_BASE_URL}/sources`, { content });
+  get(path: string) {
+    return this.http.get<SourceContent>(`${API_BASE_URL}/sources/${path.split('/').map(encodeURIComponent).join('/')}`);
+  }
+
+  create(content: string, folder: string) {
+    return this.http.post<SourceDocument>(`${API_BASE_URL}/sources`, { content, folder });
   }
 }

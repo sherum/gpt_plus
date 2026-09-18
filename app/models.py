@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 class SourceDocument(BaseModel):
     filename: str
+    path: str
 
 
 class SourceContent(BaseModel):
@@ -14,6 +15,7 @@ class SourceContent(BaseModel):
 
 class CreateSourceRequest(BaseModel):
     content: str
+    folder: str = ""
 
 
 class Message(BaseModel):

@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.agents.pipeline import run_pipeline
 from app.llm import openrouter_model
@@ -11,7 +12,7 @@ from app.models import (
     SourceContent,
     SourceDocument,
 )
-from app.sources import create_source, list_sources, read_source
+from app.sources import create_source, list_folders, list_sources, read_source, resolve
 
 load_dotenv()
 
@@ -27,22 +28,35 @@ app.add_middleware(
 ROLE_MAP = {"prompt": "user", "response": "assistant"}
 
 
+@app.exception_handler(ValueError)
+def value_error_handler(request: Request, error: ValueError) -> JSONResponse:
+    return JSONResponse(status_code=400, content={"detail": str(error)})
+
+
+def to_document(path: str) -> SourceDocument:
+    return SourceDocument(filename=path.rsplit("/", 1)[-1], path=path)
+
+
+@app.get("/folders", response_model=list[str])
+def get_folders() -> list[str]:
+    return list_folders()
+
+
 @app.get("/sources", response_model=list[SourceDocument])
-def get_sources() -> list[SourceDocument]:
-    return [SourceDocument(filename=name) for name in list_sources()]
+def get_sources(folder: str = "") -> list[SourceDocument]:
+    return [to_document(path) for path in list_sources(folder)]
 
 
-@app.get("/sources/{filename}", response_model=SourceContent)
-def get_source(filename: str) -> SourceContent:
-    if filename not in list_sources():
+@app.get("/sources/{path:path}", response_model=SourceContent)
+def get_source(path: str) -> SourceContent:
+    if not resolve(path).is_file():
         raise HTTPException(status_code=404, detail="Source not found")
-    return SourceContent(filename=filename, content=read_source(filename))
+    return SourceContent(filename=path, content=read_source(path))
 
 
 @app.post("/sources", response_model=SourceDocument)
 def post_source(request: CreateSourceRequest) -> SourceDocument:
-    filename = create_source(request.content)
-    return SourceDocument(filename=filename)
+    return to_document(create_source(request.content, request.folder))
 
 
 @app.post("/chat", response_model=ChatResponse)

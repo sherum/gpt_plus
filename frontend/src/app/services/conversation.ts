@@ -14,6 +14,9 @@ export class ConversationStore {
   private readonly sourceService = inject(Source);
   private readonly chatService = inject(Chat);
 
+  readonly folders = signal<string[]>([]);
+  readonly currentFolder = signal('');
+  readonly linkFolders = signal(false);
   readonly sources = signal<SourceDocument[]>([]);
   readonly selectedSources = signal<Set<string>>(new Set());
   readonly narrative = signal('');
@@ -30,17 +33,20 @@ export class ConversationStore {
   readonly finalAgentModel = signal('openai/gpt-5.6-sol');
 
   constructor() {
-    this.sourceService.list().subscribe({
-      next: (docs) => this.sources.set(docs),
-      error: () => this.error.set('Unable to load world-building sources.'),
+    this.sourceService.folders().subscribe({
+      next: (folders) => this.folders.set(folders),
+      error: () => this.error.set('Unable to load world-building folders.'),
     });
 
     const saved = this.loadSession();
     if (saved) {
       this.selectedSources.set(new Set(saved.selectedSources));
+      this.currentFolder.set(saved.currentFolder ?? '');
+      this.linkFolders.set(saved.linkFolders ?? false);
       this.narrative.set(saved.narrative);
       this.history.set(saved.history);
     }
+    this.loadSources();
 
     effect(() => {
       const history = this.history();
@@ -50,6 +56,8 @@ export class ConversationStore {
       }
       const session: ConversationSession = {
         selectedSources: Array.from(this.selectedSources()),
+        currentFolder: this.currentFolder(),
+        linkFolders: this.linkFolders(),
         narrative: this.narrative(),
         history,
       };
@@ -69,14 +77,30 @@ export class ConversationStore {
     }
   }
 
-  toggleSource(filename: string): void {
+  private loadSources(): void {
+    this.sourceService.list(this.currentFolder()).subscribe({
+      next: (docs) => this.sources.set(docs),
+      error: () => this.error.set('Unable to load world-building sources.'),
+    });
+  }
+
+  changeFolder(folder: string): void {
+    if (!this.linkFolders()) {
+      this.selectedSources.set(new Set());
+    }
+    this.previewContent.set('');
+    this.currentFolder.set(folder);
+    this.loadSources();
+  }
+
+  toggleSource(path: string): void {
     const next = new Set(this.selectedSources());
-    if (next.has(filename)) {
-      next.delete(filename);
+    if (next.has(path)) {
+      next.delete(path);
       this.previewContent.set('');
     } else {
-      next.add(filename);
-      this.sourceService.get(filename).subscribe({
+      next.add(path);
+      this.sourceService.get(path).subscribe({
         next: (result) => this.previewContent.set(result.content),
         error: () => this.previewContent.set('Unable to load preview.'),
       });
@@ -89,7 +113,7 @@ export class ConversationStore {
       return;
     }
     this.savingSource.set(true);
-    this.sourceService.create(content).subscribe({
+    this.sourceService.create(content, this.currentFolder()).subscribe({
       next: (doc) => {
         this.sources.update((s) => [...s, doc]);
         this.savingSource.set(false);

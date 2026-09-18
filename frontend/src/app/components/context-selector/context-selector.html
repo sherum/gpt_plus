@@ -1,16 +1,55 @@
 <div class="px-3 py-2 h-100 d-flex flex-column">
   <div class="fw-semibold mb-2">World-Building Context</div>
-  @for (source of conversation.sources(); track source.filename) {
+
+  <label for="folder" class="form-label mb-1">Folder</label>
+  <select
+    id="folder"
+    class="form-select mb-1"
+    [value]="conversation.currentFolder()"
+    (change)="conversation.changeFolder($any($event.target).value)"
+  >
+    @for (folder of conversation.folders(); track folder) {
+      <option [value]="folder" [selected]="folder === conversation.currentFolder()">{{ folderLabel(folder) }}</option>
+    }
+  </select>
+  <div class="form-check mb-2">
+    <input
+      class="form-check-input"
+      type="checkbox"
+      id="link-folders"
+      [checked]="conversation.linkFolders()"
+      (change)="conversation.linkFolders.set($any($event.target).checked)"
+    />
+    <label class="form-check-label" for="link-folders">Link folders (keep selected documents when changing folder)</label>
+  </div>
+
+  @for (source of conversation.sources(); track source.path) {
     <div class="form-check">
       <input
         class="form-check-input"
         type="checkbox"
-        [id]="'source-' + source.filename"
-        [checked]="isSelected(source.filename)"
-        (change)="conversation.toggleSource(source.filename)"
+        [id]="'source-' + source.path"
+        [checked]="isSelected(source.path)"
+        (change)="conversation.toggleSource(source.path)"
       />
-      <label class="form-check-label" [for]="'source-' + source.filename">{{ source.filename }}</label>
+      <label class="form-check-label" [for]="'source-' + source.path">{{ source.filename }}</label>
     </div>
+  }
+
+  @if (otherFolderSelections().length > 0) {
+    <div class="fw-semibold mt-2 mb-1">Selected from other folders</div>
+    @for (path of otherFolderSelections(); track path) {
+      <div class="form-check">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          [id]="'other-' + path"
+          checked
+          (change)="conversation.toggleSource(path)"
+        />
+        <label class="form-check-label" [for]="'other-' + path">{{ path }}</label>
+      </div>
+    }
   }
 
   <label for="preview" class="form-label fw-semibold mb-1 mt-3">Preview</label>

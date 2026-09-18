@@ -46,6 +46,12 @@ Put your own `.txt`, `.md`, or `.pdf` files in the `sources/` folder. They appea
 as checkboxes in the app; only the ones you tick are sent to the models. Your
 files are gitignored, so they stay private. A sample file is included.
 
+Each subfolder of `sources/` is selectable from the Folder dropdown, so you can
+keep one folder per book. Tick "Link folders" to keep your selected documents
+when you switch folders (for example, one book drawing on several folders);
+with it unticked, switching folders clears the selection. Documents selected
+from other folders are listed under "Selected from other folders".
+
 ## Troubleshooting
 
 - Port 4200 or 8123 in use: stop the other program or edit the ports in `docker-compose.yml`.

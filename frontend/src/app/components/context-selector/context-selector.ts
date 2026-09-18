@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, computed } from '@angular/core';
 
 import { ConversationStore } from '../../services/conversation';
 
@@ -9,9 +9,18 @@ import { ConversationStore } from '../../services/conversation';
   styleUrl: './context-selector.css',
 })
 export class ContextSelector {
+  readonly otherFolderSelections = computed(() => {
+    const listed = new Set(this.conversation.sources().map((s) => s.path));
+    return Array.from(this.conversation.selectedSources()).filter((path) => !listed.has(path));
+  });
+
   constructor(readonly conversation: ConversationStore) {}
 
-  isSelected(filename: string): boolean {
-    return this.conversation.selectedSources().has(filename);
+  isSelected(path: string): boolean {
+    return this.conversation.selectedSources().has(path);
+  }
+
+  folderLabel(folder: string): string {
+    return folder || '(sources root)';
   }
 }
