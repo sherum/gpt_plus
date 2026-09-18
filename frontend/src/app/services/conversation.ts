@@ -1,21 +1,24 @@
 import { Service, effect, inject, signal } from '@angular/core';
 
 import { Chat } from './chat';
-import { Source } from './source';
-import { ChatRequest } from '../models/chat-request';
+import { WorldFolders } from './world-folders';
+import { ChatDocument, ChatRequest } from '../models/chat-request';
 import { ConversationSession } from '../models/conversation-session';
 import { Message } from '../models/message';
 import { SourceDocument } from '../models/source-document';
+import { WorldFolder } from '../models/world-folder';
 
 const STORAGE_KEY = 'last-conversation-session';
 
 @Service()
 export class ConversationStore {
-  private readonly sourceService = inject(Source);
+  private readonly worldFolders = inject(WorldFolders);
   private readonly chatService = inject(Chat);
 
-  readonly folders = signal<string[]>([]);
+  readonly folders = this.worldFolders.folders;
+  readonly folderAccessSupported = this.worldFolders.supported;
   readonly currentFolder = signal('');
+  readonly needsAccess = signal(false);
   readonly linkFolders = signal(false);
   readonly sources = signal<SourceDocument[]>([]);
   readonly selectedSources = signal<Set<string>>(new Set());
@@ -33,11 +36,6 @@ export class ConversationStore {
   readonly finalAgentModel = signal('openai/gpt-5.6-sol');
 
   constructor() {
-    this.sourceService.folders().subscribe({
-      next: (folders) => this.folders.set(folders),
-      error: () => this.error.set('Unable to load world-building folders.'),
-    });
-
     const saved = this.loadSession();
     if (saved) {
       this.selectedSources.set(new Set(saved.selectedSources));
@@ -46,7 +44,7 @@ export class ConversationStore {
       this.narrative.set(saved.narrative);
       this.history.set(saved.history);
     }
-    this.loadSources();
+    this.worldFolders.ready.then(() => this.loadSources());
 
     effect(() => {
       const history = this.history();
@@ -77,52 +75,101 @@ export class ConversationStore {
     }
   }
 
-  private loadSources(): void {
-    this.sourceService.list(this.currentFolder()).subscribe({
-      next: (docs) => this.sources.set(docs),
-      error: () => this.error.set('Unable to load world-building sources.'),
-    });
+  private async loadSources(): Promise<void> {
+    const folder = this.worldFolders.find(this.currentFolder());
+    this.needsAccess.set(false);
+    this.sources.set([]);
+    if (!folder) {
+      return;
+    }
+    if (!(await this.worldFolders.hasAccess(folder))) {
+      this.needsAccess.set(true);
+      return;
+    }
+    const names = await this.worldFolders.listDocuments(folder);
+    this.sources.set(names.map((filename) => ({ filename, path: `${folder.id}/${filename}` })));
   }
 
-  changeFolder(folder: string): void {
+  private async ensureAccess(folder: WorldFolder): Promise<void> {
+    if (!(await this.worldFolders.hasAccess(folder)) && !(await this.worldFolders.requestAccess(folder))) {
+      throw new Error(`Access denied to ${folder.handle.name}`);
+    }
+  }
+
+  private async readDocument(path: string): Promise<ChatDocument> {
+    const [id, filename] = path.split('/');
+    const folder = this.worldFolders.find(id)!;
+    await this.ensureAccess(folder);
+    return {
+      filename: `${folder.handle.name}/${filename}`,
+      content: await this.worldFolders.read(folder, filename),
+    };
+  }
+
+  documentLabel(path: string): string {
+    const [id, filename] = path.split('/');
+    return `${this.worldFolders.find(id)?.handle.name ?? 'unknown folder'}/${filename}`;
+  }
+
+  async addFolder(): Promise<void> {
+    try {
+      const folder = await this.worldFolders.add();
+      await this.changeFolder(folder.id);
+    } catch (error) {
+      if (!(error instanceof DOMException && error.name === 'AbortError')) {
+        this.error.set('Unable to add the folder.');
+      }
+    }
+  }
+
+  async changeFolder(id: string): Promise<void> {
     if (!this.linkFolders()) {
       this.selectedSources.set(new Set());
     }
     this.previewContent.set('');
-    this.currentFolder.set(folder);
-    this.loadSources();
+    this.currentFolder.set(id);
+    await this.loadSources();
   }
 
-  toggleSource(path: string): void {
+  async grantAccess(): Promise<void> {
+    await this.worldFolders.requestAccess(this.worldFolders.find(this.currentFolder())!);
+    await this.loadSources();
+  }
+
+  async toggleSource(path: string): Promise<void> {
     const next = new Set(this.selectedSources());
     if (next.has(path)) {
       next.delete(path);
       this.previewContent.set('');
     } else {
       next.add(path);
-      this.sourceService.get(path).subscribe({
-        next: (result) => this.previewContent.set(result.content),
-        error: () => this.previewContent.set('Unable to load preview.'),
-      });
+      this.readDocument(path).then(
+        (document) => this.previewContent.set(document.content),
+        () => this.previewContent.set('Unable to load preview.'),
+      );
     }
     this.selectedSources.set(next);
   }
 
-  saveSource(content: string): void {
+  async saveSource(content: string): Promise<void> {
     if (!content.trim() || this.savingSource()) {
       return;
     }
+    const folder = this.worldFolders.find(this.currentFolder());
+    if (!folder) {
+      this.error.set('Add or select a folder before saving a document.');
+      return;
+    }
     this.savingSource.set(true);
-    this.sourceService.create(content, this.currentFolder()).subscribe({
-      next: (doc) => {
-        this.sources.update((s) => [...s, doc]);
-        this.savingSource.set(false);
-      },
-      error: () => {
-        this.error.set('Unable to save source document.');
-        this.savingSource.set(false);
-      },
-    });
+    try {
+      await this.ensureAccess(folder);
+      await this.worldFolders.create(folder, content);
+      await this.loadSources();
+    } catch {
+      this.error.set('Unable to save source document.');
+    } finally {
+      this.savingSource.set(false);
+    }
   }
 
   submit(): void {
@@ -132,8 +179,26 @@ export class ConversationStore {
     }
     this.loading.set(true);
     this.error.set(null);
+    this.readSelectedDocuments().then(
+      (documents) => this.send(question, documents),
+      () => {
+        this.error.set('Unable to read the selected documents.');
+        this.loading.set(false);
+      },
+    );
+  }
+
+  private async readSelectedDocuments(): Promise<ChatDocument[]> {
+    const documents: ChatDocument[] = [];
+    for (const path of this.selectedSources()) {
+      documents.push(await this.readDocument(path));
+    }
+    return documents;
+  }
+
+  private send(question: string, documents: ChatDocument[]): void {
     const request: ChatRequest = {
-      selected_sources: Array.from(this.selectedSources()),
+      selected_documents: documents,
       narrative: this.narrative(),
       question,
       conversation_history: this.history(),

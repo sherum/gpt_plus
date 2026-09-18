@@ -9,10 +9,5 @@ __pycache__/
 .DS_Store
 node_modules/
 
-# Private world-building documents stay local; only samples are published
-sources/*
-!sources/.gitkeep
-!sources/sample_*
-
 # Local Claude Code project instructions
 CLAUDE.md

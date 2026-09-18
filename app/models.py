@@ -3,19 +3,9 @@ from typing import Literal
 from pydantic import BaseModel
 
 
-class SourceDocument(BaseModel):
-    filename: str
-    path: str
-
-
-class SourceContent(BaseModel):
+class Document(BaseModel):
     filename: str
     content: str
-
-
-class CreateSourceRequest(BaseModel):
-    content: str
-    folder: str = ""
 
 
 class Message(BaseModel):
@@ -24,7 +14,7 @@ class Message(BaseModel):
 
 
 class ChatRequest(BaseModel):
-    selected_sources: list[str]
+    selected_documents: list[Document]
     narrative: str
     question: str
     conversation_history: list[Message] = []

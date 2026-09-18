@@ -8,7 +8,6 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --no-install-project
 
 COPY app ./app
-COPY sources ./sources
 
 RUN uv sync
 

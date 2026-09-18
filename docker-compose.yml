@@ -7,7 +7,6 @@ services:
       - .env
     volumes:
       - ./app:/app/app
-      - ./sources:/app/sources
 
   frontend:
     build: ./frontend

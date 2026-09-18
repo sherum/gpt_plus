@@ -1,7 +1,7 @@
 # GPT Plus: Science-Fiction Writing Assistant
 
 A web app for exploring story ideas against your own world-building notes.
-Select source documents, paste your current narrative, ask a question, and a
+Select world-building documents, paste your current narrative, ask a question, and a
 multi-agent LLM pipeline (two primary agents, each with three tool agents,
 plus a final agent) answers. Follow-up questions keep the conversation context.
 
@@ -40,17 +40,25 @@ OpenRouter id (for example `anthropic/claude-haiku-4.5`) to
 `frontend/src/app/models/model-options.ts`. Defaults are set in
 `frontend/src/app/services/conversation.ts`.
 
-## World-building sources
+## World-building folders
 
-Put your own `.txt`, `.md`, or `.pdf` files in the `sources/` folder. They appear
-as checkboxes in the app; only the ones you tick are sent to the models. Your
-files are gitignored, so they stay private. A sample file is included.
+Click "Add Folder..." and pick any folder on your computer that holds your
+world-building notes (`.txt` or `.md` files, top level only). The folder can be
+empty; the Save buttons under Question and Narrative create new documents in the
+current folder. Added folders are remembered in the dropdown, so you can keep one
+folder per book.
 
-Each subfolder of `sources/` is selectable from the Folder dropdown, so you can
-keep one folder per book. Tick "Link folders" to keep your selected documents
-when you switch folders (for example, one book drawing on several folders);
-with it unticked, switching folders clears the selection. Documents selected
-from other folders are listed under "Selected from other folders".
+Only file names are listed. A document's contents are read when you tick it, and
+only ticked documents are sent to the models with your question. Nothing is
+uploaded or copied to the server, and no folder is stored in this repository.
+
+Tick "Link folders" to keep your selected documents when you switch folders (for
+example, one book drawing on several folders); with it unticked, switching folders
+clears the selection. Documents selected from other folders are listed under
+"Selected from other folders".
+
+Folder access needs a Chromium browser (Chrome or Edge). After a restart the
+browser may ask you to grant access to a saved folder again; click "Grant Access".
 
 ## Troubleshooting
 

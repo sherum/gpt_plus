@@ -1,17 +1,34 @@
 <div class="px-3 py-2 h-100 d-flex flex-column">
   <div class="fw-semibold mb-2">World-Building Context</div>
 
+  @if (!conversation.folderAccessSupported) {
+    <div class="alert alert-danger py-1 px-2" role="alert">
+      This browser cannot open folders. Use Chrome or Edge.
+    </div>
+  }
+
   <label for="folder" class="form-label mb-1">Folder</label>
-  <select
-    id="folder"
-    class="form-select mb-1"
-    [value]="conversation.currentFolder()"
-    (change)="conversation.changeFolder($any($event.target).value)"
-  >
-    @for (folder of conversation.folders(); track folder) {
-      <option [value]="folder" [selected]="folder === conversation.currentFolder()">{{ folderLabel(folder) }}</option>
-    }
-  </select>
+  <div class="input-group mb-1">
+    <select
+      id="folder"
+      class="form-select"
+      [value]="conversation.currentFolder()"
+      (change)="conversation.changeFolder($any($event.target).value)"
+    >
+      <option value="" [selected]="conversation.currentFolder() === ''">Select a folder</option>
+      @for (folder of conversation.folders(); track folder.id) {
+        <option [value]="folder.id" [selected]="folder.id === conversation.currentFolder()">{{ folder.handle.name }}</option>
+      }
+    </select>
+    <button
+      type="button"
+      class="btn btn-outline-secondary"
+      [disabled]="!conversation.folderAccessSupported"
+      (click)="conversation.addFolder()"
+    >
+      Add Folder...
+    </button>
+  </div>
   <div class="form-check mb-2">
     <input
       class="form-check-input"
@@ -22,6 +39,13 @@
     />
     <label class="form-check-label" for="link-folders">Link folders (keep selected documents when changing folder)</label>
   </div>
+
+  @if (conversation.needsAccess()) {
+    <div class="alert alert-warning py-1 px-2 d-flex align-items-center justify-content-between" role="alert">
+      <span>Access to this folder must be granted again.</span>
+      <button type="button" class="btn btn-warning btn-sm" (click)="conversation.grantAccess()">Grant Access</button>
+    </div>
+  }
 
   @for (source of conversation.sources(); track source.path) {
     <div class="form-check">
@@ -34,6 +58,10 @@
       />
       <label class="form-check-label" [for]="'source-' + source.path">{{ source.filename }}</label>
     </div>
+  } @empty {
+    @if (conversation.currentFolder() && !conversation.needsAccess()) {
+      <div class="text-body-secondary">No .txt or .md documents in this folder yet.</div>
+    }
   }
 
   @if (otherFolderSelections().length > 0) {
@@ -47,7 +75,7 @@
           checked
           (change)="conversation.toggleSource(path)"
         />
-        <label class="form-check-label" [for]="'other-' + path">{{ path }}</label>
+        <label class="form-check-label" [for]="'other-' + path">{{ conversation.documentLabel(path) }}</label>
       </div>
     }
   }

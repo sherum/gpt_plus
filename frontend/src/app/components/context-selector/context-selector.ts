@@ -19,8 +19,4 @@ export class ContextSelector {
   isSelected(path: string): boolean {
     return this.conversation.selectedSources().has(path);
   }
-
-  folderLabel(folder: string): string {
-    return folder || '(sources root)';
-  }
 }

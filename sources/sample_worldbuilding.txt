@@ -1,6 +1,0 @@
-Sample world-building document (replace with your own).
-
-The colony ship Meridian travels at 0.1c using a fusion torch fueled by deuterium.
-Waste heat is radiated from two large fin arrays; the ship is visible in infrared
-from several light-years away. Crew hibernation is limited to 40 years by the
-medical technology of this setting.

@@ -1,7 +1,12 @@
 import { Message } from './message';
 
+export interface ChatDocument {
+  filename: string;
+  content: string;
+}
+
 export interface ChatRequest {
-  selected_sources: string[];
+  selected_documents: ChatDocument[];
   narrative: string;
   question: string;
   conversation_history: Message[];
