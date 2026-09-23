@@ -1,3 +1,5 @@
+from concurrent.futures import ThreadPoolExecutor
+
 from app.agents.final import run_final_agent
 from app.agents.primary import run_primary_agent
 
@@ -27,10 +29,13 @@ def run_pipeline(
     final_model: str,
     history: list[dict] | None = None,
 ) -> str:
-    analysis_1 = run_primary_agent(
-        PERSONA_1, world_context, narrative, question, primary_model, tool_model, history
-    )
-    analysis_2 = run_primary_agent(
-        PERSONA_2, world_context, narrative, question, primary_model, tool_model, history
-    )
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        future_1 = executor.submit(
+            run_primary_agent, PERSONA_1, world_context, narrative, question, primary_model, tool_model, history
+        )
+        future_2 = executor.submit(
+            run_primary_agent, PERSONA_2, world_context, narrative, question, primary_model, tool_model, history
+        )
+        analysis_1 = future_1.result()
+        analysis_2 = future_2.result()
     return run_final_agent(question, narrative, world_context, analysis_1, analysis_2, final_model, history)

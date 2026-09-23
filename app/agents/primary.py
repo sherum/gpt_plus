@@ -1,4 +1,5 @@
 import json
+from concurrent.futures import ThreadPoolExecutor
 
 import litellm
 
@@ -27,14 +28,19 @@ def run_primary_agent(
         if not message.tool_calls:
             return message.content
         messages.append(message.model_dump())
+        with ThreadPoolExecutor(max_workers=len(message.tool_calls)) as executor:
+            futures = {
+                tool_call.id: executor.submit(
+                    tools[tool_call.function.name], **json.loads(tool_call.function.arguments)
+                )
+                for tool_call in message.tool_calls
+            }
         for tool_call in message.tool_calls:
-            args = json.loads(tool_call.function.arguments)
-            result = tools[tool_call.function.name](**args)
             messages.append(
                 {
                     "role": "tool",
                     "tool_call_id": tool_call.id,
-                    "content": result,
+                    "content": futures[tool_call.id].result(),
                 }
             )
     return messages[-1]["content"]
