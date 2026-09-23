@@ -15,4 +15,4 @@ if not exist .env (
 
 docker compose up --build -d
 echo Backend:  http://localhost:8123
-echo Frontend: http://localhost:4200
+echo Frontend: http://localhost:3200

@@ -29,7 +29,7 @@ Stack: FastAPI + LiteLLM (backend), Angular + Bootstrap (frontend), Docker Compo
        OPENROUTER_API_KEY=your-key-here
 
    `.env` is listed in `.gitignore`. Never commit it.
-4. Run the start script again, then open http://localhost:4200
+4. Run the start script again, then open http://localhost:3200
 
 To stop: `./stop.sh` (Linux/macOS) or `stop.bat` (Windows).
 
@@ -68,7 +68,7 @@ browser may ask you to grant access to a saved folder again; click "Grant Access
 
 ## Troubleshooting
 
-- Port 4200 or 8123 in use: stop the other program or edit the ports in `docker-compose.yml`.
+- Port 3200 or 8123 in use: stop the other program or edit the ports in `docker-compose.yml`.
 - Authentication errors: check `OPENROUTER_API_KEY` in `.env`, then restart with the stop and start scripts.
 - View logs: `docker compose logs -f`
 
