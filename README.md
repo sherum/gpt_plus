@@ -7,6 +7,12 @@ plus a final agent) answers. Follow-up questions keep the conversation context.
 
 Stack: FastAPI + LiteLLM (backend), Angular + Bootstrap (frontend), Docker Compose.
 
+## Screenshots
+
+![Main window: model dropdowns, response, prompt and narrative panels](docs/images/app-main-window.png)
+
+![World-building context panel: folder selection and saving new context](docs/images/app-context-panel.png)
+
 ## Requirements
 
 - Docker (Docker Desktop on Windows/macOS, Docker Engine + Compose on Linux)
