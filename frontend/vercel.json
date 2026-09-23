@@ -1,0 +1,4 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "ng build --configuration production --define NG_API_BASE_URL=\"'$API_BASE_URL'\""
+}
