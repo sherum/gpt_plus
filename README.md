@@ -1,4 +1,4 @@
-# GPT Plus: Science-Fiction Writing Assistant
+# Science Fiction Writing Assistant
 
 A web app for exploring story ideas against your own world-building notes.
 Select world-building documents, paste your current narrative, ask a question, and a
