@@ -1,1 +1,13 @@
 /* You can add global styles to this file, and also import other style files */
+
+.resize-handle {
+  flex-shrink: 0;
+  height: 10px;
+  cursor: ns-resize;
+  touch-action: none;
+  background: linear-gradient(var(--bs-border-color), var(--bs-border-color)) center / 48px 3px no-repeat;
+}
+
+.resize-handle:hover {
+  background-color: var(--bs-tertiary-bg);
+}

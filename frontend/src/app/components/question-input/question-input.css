@@ -4,5 +4,6 @@
 }
 
 textarea {
+  resize: none;
   font-size: 1.125rem;
 }

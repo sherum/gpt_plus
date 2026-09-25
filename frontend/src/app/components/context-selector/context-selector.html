@@ -1,4 +1,4 @@
-<div class="px-3 py-2 h-100 d-flex flex-column">
+<div class="px-3 py-2 d-flex flex-column panel">
   <div class="fw-semibold mb-2">World-Building Context</div>
 
   @if (!conversation.folderAccessSupported) {
@@ -80,9 +80,11 @@
     }
   }
 
-  <label for="preview" class="form-label fw-semibold mb-1 mt-3">Preview</label>
+  <div class="mt-auto pt-2" [appTopResize]="previewInput" aria-label="Resize preview"></div>
+  <label for="preview" class="form-label fw-semibold mb-1">Preview</label>
   <textarea
     id="preview"
+    #previewInput
     class="form-control flex-grow-1"
     readonly
     placeholder="Select a document to preview its contents..."

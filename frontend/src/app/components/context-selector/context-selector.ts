@@ -1,10 +1,11 @@
 import { Component, computed } from '@angular/core';
 
+import { TopResize } from '../../directives/top-resize';
 import { ConversationStore } from '../../services/conversation';
 
 @Component({
   selector: 'app-context-selector',
-  imports: [],
+  imports: [TopResize],
   templateUrl: './context-selector.html',
   styleUrl: './context-selector.css',
 })

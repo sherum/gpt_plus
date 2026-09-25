@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
 
+import { TopResize } from '../../directives/top-resize';
 import { ConversationStore } from '../../services/conversation';
 
 @Component({
   selector: 'app-question-input',
-  imports: [],
+  imports: [TopResize],
   templateUrl: './question-input.html',
   styleUrl: './question-input.css',
 })
